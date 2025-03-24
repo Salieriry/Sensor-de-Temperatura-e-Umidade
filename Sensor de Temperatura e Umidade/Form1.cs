@@ -54,7 +54,7 @@ namespace Sensor_de_Temperatura_e_Umidade
             InitializeComponent(); // Inicializa o layout básico
             ConfigurarInterface(); // Configura a interface personalizada
 
-            CarregarPortasSeriais(); // Carrega as portas seriais disponíveis
+    
 
             // Inicializa variáveis
             historicoMedicoes = new List<Medicao>();
@@ -435,18 +435,21 @@ namespace Sensor_de_Temperatura_e_Umidade
 
         private void CarregarPortasSeriais()
         {
-            // Limpa o ComboBox
+            // Limpa o ComboBox antes de carregar as portas disponíveis
             cbSerial.Items.Clear();
 
-            // Carrega as portas seriais disponíveis no sistema
+            // Obtém a lista de portas seriais disponíveis no sistema
             string[] portas = System.IO.Ports.SerialPort.GetPortNames();
+
             if (portas.Length > 0)
             {
+                // Adiciona as portas disponíveis ao ComboBox e seleciona a primeira
                 cbSerial.Items.AddRange(portas);
                 cbSerial.SelectedIndex = 0;
             }
             else
             {
+                // Se não houver portas disponíveis, exibe uma mensagem e desabilita o ComboBox
                 cbSerial.Items.Add("Nenhuma porta disponível");
                 cbSerial.SelectedIndex = 0;
                 cbSerial.Enabled = false;
@@ -455,6 +458,7 @@ namespace Sensor_de_Temperatura_e_Umidade
 
         private void ConectarDispositivo(object sender, EventArgs e)
         {
+            // Verifica se uma porta foi selecionada no ComboBox
             if (cbSerial.SelectedItem == null)
             {
                 MessageBox.Show("Selecione uma porta serial!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -463,17 +467,23 @@ namespace Sensor_de_Temperatura_e_Umidade
 
             try
             {
+                // Obtém a porta selecionada
                 string portaSelecionada = cbSerial.SelectedItem.ToString();
+
+                // Inicializa e configura a porta serial com baud rate de 9600
                 serialPort1 = new SerialPort(portaSelecionada, 9600);
-                serialPort1.Open();
+                serialPort1.Open(); // Abre a conexão com a porta serial
+
+                // Associa o evento de recebimento de dados à função que processa os dados recebidos
                 serialPort1.DataReceived += recebeLeitura;
+
                 MessageBox.Show($"Conectado à porta {portaSelecionada}", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Desabilita o combobox e o botão conectar
+                // Desabilita o ComboBox e o botão de conexão para evitar múltiplas conexões
                 cbSerial.Enabled = false;
                 ((Button)sender).Enabled = false;
 
-                // Habilita o botão desconectar
+                // Habilita o botão de desconectar
                 Button btnDesconectar = ((Button)sender).Parent.Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Desconectar");
                 if (btnDesconectar != null)
                     btnDesconectar.Enabled = true;
@@ -488,24 +498,25 @@ namespace Sensor_de_Temperatura_e_Umidade
         {
             try
             {
+                // Verifica se a porta serial está aberta antes de tentar desconectar
                 if (serialPort1 != null && serialPort1.IsOpen)
                 {
                     serialPort1.DataReceived -= recebeLeitura; // Remove o evento de leitura
-                    serialPort1.Close(); // Fecha a porta serial
-                    serialPort1.Dispose(); // Libera os recursos
+                    serialPort1.Close(); // Fecha a conexão com a porta serial
+                    serialPort1.Dispose(); // Libera os recursos da porta serial
                 }
 
                 MessageBox.Show("Dispositivo desconectado", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Habilita o combobox e o botão conectar
+                // Reativa o ComboBox e o botão de conexão para permitir nova conexão
                 cbSerial.Enabled = true;
 
-                // Habilita o botão conectar
+                // Habilita o botão de conexão
                 Button btnConectar = ((Button)sender).Parent.Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Conectar");
                 if (btnConectar != null)
                     btnConectar.Enabled = true;
 
-                // Desabilita o botão desconectar
+                // Desabilita o botão de desconectar
                 ((Button)sender).Enabled = false;
             }
             catch (Exception ex)
@@ -516,16 +527,17 @@ namespace Sensor_de_Temperatura_e_Umidade
 
         private void recebeLeitura(object sender, SerialDataReceivedEventArgs e)
         {
-
             try
             {
-                string dadosRecebidos = serialPort1.ReadLine().Trim(); // Lê os dados recebidos
+                // Lê os dados recebidos da porta serial e remove espaços extras
+                string dadosRecebidos = serialPort1.ReadLine().Trim();
 
+                // Garante que as atualizações da UI ocorram na thread principal
                 this.Invoke((MethodInvoker)delegate
                 {
-                    atualizarTemperatura();
-                    atualizarUmidade();
-                    AdicionarMedicaoAoHistorico();
+                    atualizarTemperatura(); // Atualiza a temperatura com base nos novos dados
+                    atualizarUmidade(); // Atualiza a umidade com base nos novos dados
+                    AdicionarMedicaoAoHistorico(); // Armazena a medição no histórico
                 });
 
             }
@@ -535,37 +547,41 @@ namespace Sensor_de_Temperatura_e_Umidade
             }
         }
 
+        // ---------------------------- Controle de Abas ----------------------------
+
         private void tabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             TabControl tab = (TabControl)sender;
+
+            // Verifica qual aba foi selecionada e ativa o modo correspondente
             if (tab.SelectedTab.Text == "Simulação")
             {
-                // Código para ativar o modo de simulação
-                DesativarModoReal();
-                AtivarModoSimulacao();
+                DesativarModoReal(); // Desativa o modo de sensores reais
+                AtivarModoSimulacao(); // Ativa a simulação
             }
             else if (tab.SelectedTab.Text == "Sensor Real")
             {
-                // Código para ativar o modo real
-                DesativarModoSimulacao();
-                AtivarModoReal();
+                DesativarModoSimulacao(); // Desativa a simulação
+                AtivarModoReal(); // Ativa o modo de sensores reais
             }
         }
 
+        // ---------------------------- Modos de Operação ----------------------------
+
         private void AtivarModoSimulacao()
         {
-            // Habilita controles do modo simulação
+            // Habilita os controles relacionados à simulação
             buttonAtualizacaoManual.Enabled = true;
             checkBoxAtualizacaoAutomatica.Enabled = true;
         }
 
         private void DesativarModoSimulacao()
         {
-            // Desabilita controles do modo simulação e para a atualização automática se estiver ativa
+            // Desabilita os controles da simulação e para a atualização automática, se estiver ativa
             if (checkBoxAtualizacaoAutomatica.Checked)
             {
                 checkBoxAtualizacaoAutomatica.Checked = false;
-                // Pare o timer ou qualquer outro mecanismo de atualização automática aqui
+                // Aqui deve ser incluída a lógica para parar o timer ou outro mecanismo de atualização automática
             }
             buttonAtualizacaoManual.Enabled = false;
             checkBoxAtualizacaoAutomatica.Enabled = false;
@@ -573,21 +589,23 @@ namespace Sensor_de_Temperatura_e_Umidade
 
         private void AtivarModoReal()
         {
-            // Recarrega as portas seriais e habilita controles do modo real
+            // Recarrega as portas seriais disponíveis e habilita os controles do modo real
             CarregarPortasSeriais();
-            // Outros códigos para ativar o modo real
+            // Outros códigos podem ser adicionados aqui, se necessário
         }
 
         private void DesativarModoReal()
         {
-            // Desconecta da porta serial se estiver conectado
+            // Desconecta da porta serial caso esteja conectada
             Button btnDesconectar = tabControl.TabPages[1].Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Desconectar");
+
             if (btnDesconectar != null && !btnDesconectar.Enabled)
             {
-                // Simula um clique no botão desconectar
+                // Simula um clique no botão de desconectar para garantir que a conexão seja encerrada corretamente
                 DesconectarDispositivo(btnDesconectar, EventArgs.Empty);
             }
         }
+
 
     }
 }
