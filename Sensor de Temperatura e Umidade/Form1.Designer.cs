@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.buttonAtualizacaoManual = new System.Windows.Forms.Button();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.checkBoxAtualizacaoAutomatica = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.tbVariacaoUmidade = new System.Windows.Forms.TextBox();
@@ -40,6 +39,8 @@
             this.tbUmidade = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.tbVariacaoTemperatura = new System.Windows.Forms.TextBox();
+            this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
+            this.cbSerial = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // buttonAtualizacaoManual
@@ -54,10 +55,6 @@
             this.buttonAtualizacaoManual.Text = "Atualização Manual";
             this.buttonAtualizacaoManual.UseVisualStyleBackColor = false;
             this.buttonAtualizacaoManual.Click += new System.EventHandler(this.atualizarManualmente);
-            // 
-            // timer1
-            // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // checkBoxAtualizacaoAutomatica
             // 
@@ -159,11 +156,25 @@
             this.tbVariacaoTemperatura.Text = "?";
             this.tbVariacaoTemperatura.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // serialPort1
+            // 
+            this.serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.recebeLeitura);
+            // 
+            // cbSerial
+            // 
+            this.cbSerial.FormattingEnabled = true;
+            this.cbSerial.Location = new System.Drawing.Point(440, 115);
+            this.cbSerial.Name = "cbSerial";
+            this.cbSerial.Size = new System.Drawing.Size(204, 24);
+            this.cbSerial.TabIndex = 19;
+            this.cbSerial.Text = "Portas seriais...";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(782, 553);
+            this.Controls.Add(this.cbSerial);
             this.Controls.Add(this.checkBoxAtualizacaoAutomatica);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.tbVariacaoUmidade);
@@ -184,7 +195,6 @@
         #endregion
 
         private System.Windows.Forms.Button buttonAtualizacaoManual;
-        private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox checkBoxAtualizacaoAutomatica;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox tbVariacaoUmidade;
@@ -194,6 +204,8 @@
         private System.Windows.Forms.TextBox tbUmidade;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox tbVariacaoTemperatura;
+        private System.IO.Ports.SerialPort serialPort1;
+        private System.Windows.Forms.ComboBox cbSerial;
     }
 }
 

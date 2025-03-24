@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.IO;
+using System.IO.Ports;
 
 
 namespace Sensor_de_Temperatura_e_Umidade
@@ -17,11 +18,15 @@ namespace Sensor_de_Temperatura_e_Umidade
     {
         // ---------------------------- Variáveis Globais ----------------------------
 
+
         // Timer para atualização automática
         private Timer timer;
 
         // Listas para histórico de medições
         private List<Medicao> historicoMedicoes;
+
+        // TabControl para alternar entre modo simulação e modo real
+        TabControl tabControl;
 
         // Controles dinâmicos para histórico e gráficos
         private ListView listViewHistorico;
@@ -49,6 +54,8 @@ namespace Sensor_de_Temperatura_e_Umidade
             InitializeComponent(); // Inicializa o layout básico
             ConfigurarInterface(); // Configura a interface personalizada
 
+            CarregarPortasSeriais(); // Carrega as portas seriais disponíveis
+
             // Inicializa variáveis
             historicoMedicoes = new List<Medicao>();
 
@@ -58,6 +65,9 @@ namespace Sensor_de_Temperatura_e_Umidade
                 Interval = 5000 // Intervalo de 5 segundos
             };
             timer.Tick += timer1_Tick; // Evento disparado a cada tick
+
+
+
         }
 
         // ---------------------------- Configuração da Interface ----------------------------
@@ -70,8 +80,8 @@ namespace Sensor_de_Temperatura_e_Umidade
             // Painel para exibição de medições
             ConfigurarPainelMedicoes();
 
-            // Painel para botões de controle
-            ConfigurarPainelControles();
+            // TabControl para alternar entre modo simulação e real
+            ConfigurarTabControl();
 
             // ListView para exibição do histórico
             ConfigurarListViewHistorico();
@@ -128,29 +138,96 @@ namespace Sensor_de_Temperatura_e_Umidade
             textBox.Parent = painel;
         }
 
-        private void ConfigurarPainelControles()
+        private void ConfigurarTabControl()
         {
-            Panel painelControles = new Panel
+            tabControl = new TabControl
             {
                 Location = new Point(540, 20),
-                Size = new Size(220, 100)
+                Size = new Size(220, 120),
+                Font = new Font("Segoe UI", 9)
             };
 
+            tabControl.SelectedIndexChanged += tabControl_SelectedIndexChanged;
+
+            // Tab para modo simulação
+            TabPage tabSimulacao = new TabPage("Simulação");
+            ConfigurarModoSimulacao(tabSimulacao);
+
+            // Tab para modo real
+            TabPage tabReal = new TabPage("Sensor Real");
+            ConfigurarModoReal(tabReal);
+
+            // Adiciona as tabs ao TabControl
+            tabControl.TabPages.Add(tabSimulacao);
+            tabControl.TabPages.Add(tabReal);
+
+            this.Controls.Add(tabControl);
+        }
+
+        private void ConfigurarModoSimulacao(TabPage tabPage)
+        {
             // Botão para atualização manual
             buttonAtualizacaoManual.Font = new Font("Segoe UI", 10);
-            buttonAtualizacaoManual.Size = new Size(180, 35);
+            buttonAtualizacaoManual.Size = new Size(180, 25);
             buttonAtualizacaoManual.Location = new Point(20, 10);
             buttonAtualizacaoManual.BackColor = Color.FromArgb(240, 240, 240);
             buttonAtualizacaoManual.FlatStyle = FlatStyle.System;
-            buttonAtualizacaoManual.Parent = painelControles;
+            buttonAtualizacaoManual.Text = "Atualização Manual";
+            tabPage.Controls.Add(buttonAtualizacaoManual);
 
             // Checkbox para atualização automática
             checkBoxAtualizacaoAutomatica.Font = new Font("Segoe UI", 10);
-            checkBoxAtualizacaoAutomatica.Location = new Point(20, 55);
+            checkBoxAtualizacaoAutomatica.Location = new Point(20, 45);
             checkBoxAtualizacaoAutomatica.AutoSize = true;
-            checkBoxAtualizacaoAutomatica.Parent = painelControles;
+            checkBoxAtualizacaoAutomatica.Text = "Atualização Automática";
+            tabPage.Controls.Add(checkBoxAtualizacaoAutomatica);
+        }
 
-            this.Controls.Add(painelControles);
+        private void ConfigurarModoReal(TabPage tabPage)
+        {
+            // Label para indicar portas seriais
+            Label lblPortaSerial = new Label
+            {
+                Font = new Font("Segoe UI", 10),
+                Text = "Porta Serial:",
+                Location = new Point(20, 10),
+                Size = new Size(100, 20),
+                AutoSize = true
+            };
+            tabPage.Controls.Add(lblPortaSerial);
+
+            // Combobox para exibição de portas seriais
+            cbSerial.Font = new Font("Segoe UI", 10);
+            cbSerial.Location = new Point(20, 35);
+            cbSerial.Size = new Size(180, 25);
+            cbSerial.DropDownStyle = ComboBoxStyle.DropDownList;
+            tabPage.Controls.Add(cbSerial);
+
+            // Botão para conectar ao dispositivo
+            Button btnConectar = new Button
+            {
+                Text = "Conectar",
+                Location = new Point(20, 65),
+                Size = new Size(85, 25),
+                Font = new Font("Segoe UI", 10),
+                BackColor = Color.FromArgb(240, 240, 240),
+                FlatStyle = FlatStyle.System
+            };
+            btnConectar.Click += ConectarDispositivo;
+            tabPage.Controls.Add(btnConectar);
+
+            // Botão para desconectar do dispositivo
+            Button btnDesconectar = new Button
+            {
+                Text = "Desconectar",
+                Location = new Point(115, 65),
+                Size = new Size(85, 25),
+                Font = new Font("Segoe UI", 10),
+                BackColor = Color.FromArgb(240, 240, 240),
+                FlatStyle = FlatStyle.System
+            };
+            btnDesconectar.Click += DesconectarDispositivo;
+            tabPage.Controls.Add(btnDesconectar);
         }
 
         private void ConfigurarListViewHistorico()
@@ -351,6 +428,165 @@ namespace Sensor_de_Temperatura_e_Umidade
         {
             historicoMedicoes.Clear();
             listViewHistorico.Items.Clear();
+        }
+
+
+        // ---------------------------- Porta Serial ----------------------------
+
+        private void CarregarPortasSeriais()
+        {
+            // Limpa o ComboBox
+            cbSerial.Items.Clear();
+
+            // Carrega as portas seriais disponíveis no sistema
+            string[] portas = System.IO.Ports.SerialPort.GetPortNames();
+            if (portas.Length > 0)
+            {
+                cbSerial.Items.AddRange(portas);
+                cbSerial.SelectedIndex = 0;
+            }
+            else
+            {
+                cbSerial.Items.Add("Nenhuma porta disponível");
+                cbSerial.SelectedIndex = 0;
+                cbSerial.Enabled = false;
+            }
+        }
+
+        private void ConectarDispositivo(object sender, EventArgs e)
+        {
+            if (cbSerial.SelectedItem == null)
+            {
+                MessageBox.Show("Selecione uma porta serial!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                string portaSelecionada = cbSerial.SelectedItem.ToString();
+                serialPort1 = new SerialPort(portaSelecionada, 9600);
+                serialPort1.Open();
+                serialPort1.DataReceived += recebeLeitura;
+                MessageBox.Show($"Conectado à porta {portaSelecionada}", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Desabilita o combobox e o botão conectar
+                cbSerial.Enabled = false;
+                ((Button)sender).Enabled = false;
+
+                // Habilita o botão desconectar
+                Button btnDesconectar = ((Button)sender).Parent.Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Desconectar");
+                if (btnDesconectar != null)
+                    btnDesconectar.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao conectar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DesconectarDispositivo(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPort1 != null && serialPort1.IsOpen)
+                {
+                    serialPort1.DataReceived -= recebeLeitura; // Remove o evento de leitura
+                    serialPort1.Close(); // Fecha a porta serial
+                    serialPort1.Dispose(); // Libera os recursos
+                }
+
+                MessageBox.Show("Dispositivo desconectado", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Habilita o combobox e o botão conectar
+                cbSerial.Enabled = true;
+
+                // Habilita o botão conectar
+                Button btnConectar = ((Button)sender).Parent.Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Conectar");
+                if (btnConectar != null)
+                    btnConectar.Enabled = true;
+
+                // Desabilita o botão desconectar
+                ((Button)sender).Enabled = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao desconectar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void recebeLeitura(object sender, SerialDataReceivedEventArgs e)
+        {
+
+            try
+            {
+                string dadosRecebidos = serialPort1.ReadLine().Trim(); // Lê os dados recebidos
+
+                this.Invoke((MethodInvoker)delegate
+                {
+                    atualizarTemperatura();
+                    atualizarUmidade();
+                    AdicionarMedicaoAoHistorico();
+                });
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro na leitura da porta serial: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void tabControl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TabControl tab = (TabControl)sender;
+            if (tab.SelectedTab.Text == "Simulação")
+            {
+                // Código para ativar o modo de simulação
+                DesativarModoReal();
+                AtivarModoSimulacao();
+            }
+            else if (tab.SelectedTab.Text == "Sensor Real")
+            {
+                // Código para ativar o modo real
+                DesativarModoSimulacao();
+                AtivarModoReal();
+            }
+        }
+
+        private void AtivarModoSimulacao()
+        {
+            // Habilita controles do modo simulação
+            buttonAtualizacaoManual.Enabled = true;
+            checkBoxAtualizacaoAutomatica.Enabled = true;
+        }
+
+        private void DesativarModoSimulacao()
+        {
+            // Desabilita controles do modo simulação e para a atualização automática se estiver ativa
+            if (checkBoxAtualizacaoAutomatica.Checked)
+            {
+                checkBoxAtualizacaoAutomatica.Checked = false;
+                // Pare o timer ou qualquer outro mecanismo de atualização automática aqui
+            }
+            buttonAtualizacaoManual.Enabled = false;
+            checkBoxAtualizacaoAutomatica.Enabled = false;
+        }
+
+        private void AtivarModoReal()
+        {
+            // Recarrega as portas seriais e habilita controles do modo real
+            CarregarPortasSeriais();
+            // Outros códigos para ativar o modo real
+        }
+
+        private void DesativarModoReal()
+        {
+            // Desconecta da porta serial se estiver conectado
+            Button btnDesconectar = tabControl.TabPages[1].Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Desconectar");
+            if (btnDesconectar != null && !btnDesconectar.Enabled)
+            {
+                // Simula um clique no botão desconectar
+                DesconectarDispositivo(btnDesconectar, EventArgs.Empty);
+            }
         }
 
     }
