@@ -234,8 +234,8 @@ namespace Sensor_de_Temperatura_e_Umidade
         {
             listViewHistorico = new ListView
             {
-                Location = new Point(20, 160),
-                Size = new Size(740, 400),
+                Location = new Point(20, 180),
+                Size = new Size(740, 380),
                 View = View.Details,
                 GridLines = true,
                 FullRowSelect = true,
@@ -257,7 +257,7 @@ namespace Sensor_de_Temperatura_e_Umidade
             Button btnLimparHistorico = new Button
             {
                 Text = "Limpar Histórico",
-                Location = new Point(640, 125),
+                Location = new Point(640, 145),
                 Size = new Size(120, 30),
                 Font = new Font("Segoe UI", 9),
                 BackColor = Color.FromArgb(240, 240, 240),
@@ -605,7 +605,6 @@ namespace Sensor_de_Temperatura_e_Umidade
                 DesconectarDispositivo(btnDesconectar, EventArgs.Empty);
             }
         }
-
 
     }
 }
