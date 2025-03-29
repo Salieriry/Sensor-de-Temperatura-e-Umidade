@@ -284,7 +284,6 @@ namespace Sensor_de_Temperatura_e_Umidade
                 timer.Start();
         }
 
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             atualizarTemperatura();
@@ -591,7 +590,6 @@ namespace Sensor_de_Temperatura_e_Umidade
         {
             // Recarrega as portas seriais disponíveis e habilita os controles do modo real
             CarregarPortasSeriais();
-            // Outros códigos podem ser adicionados aqui, se necessário
         }
 
         private void DesativarModoReal()
