@@ -224,7 +224,8 @@ namespace Sensor_de_Temperatura_e_Umidade
                 Size = new Size(85, 25),
                 Font = new Font("Segoe UI", 10),
                 BackColor = Color.FromArgb(240, 240, 240),
-                FlatStyle = FlatStyle.System
+                FlatStyle = FlatStyle.System,
+                Enabled = false
             };
             btnDesconectar.Click += DesconectarDispositivo;
             tabPage.Controls.Add(btnDesconectar);
@@ -503,9 +504,10 @@ namespace Sensor_de_Temperatura_e_Umidade
                     serialPort1.DataReceived -= recebeLeitura; // Remove o evento de leitura
                     serialPort1.Close(); // Fecha a conexão com a porta serial
                     serialPort1.Dispose(); // Libera os recursos da porta serial
-                }
+                    MessageBox.Show("Dispositivo desconectado", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                } 
 
-                MessageBox.Show("Dispositivo desconectado", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
 
                 // Reativa o ComboBox e o botão de conexão para permitir nova conexão
                 cbSerial.Enabled = true;
