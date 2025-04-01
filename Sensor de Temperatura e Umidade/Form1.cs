@@ -34,8 +34,8 @@ namespace Sensor_de_Temperatura_e_Umidade
         // Variáveis de temperatura e umidade
         private double temperaturaNova = -1; // Valor inicial indica que a temperatura ainda não foi inicializada
         private double umidadeNova = -1; // Valor inicial indica que a umidade ainda não foi inicializada
-        private double ultimaTemperatura;
-        private double ultimaUmidade;
+        private double ultimaTemperatura = 0;
+        private double ultimaUmidade = 0;
 
         // Instância de Random para simular dados de temperatura e umidade
         private Random rnd = new Random();
@@ -276,9 +276,7 @@ namespace Sensor_de_Temperatura_e_Umidade
                 timer.Stop(); // Evita que o evento do timer dispare simultaneamente
 
             // Realiza a atualização manual
-            atualizarTemperatura();
-            atualizarUmidade();
-            AdicionarMedicaoAoHistorico();
+            atualizarMedidas();
 
             // Reinicia o timer, se necessário
             if (checkBoxAtualizacaoAutomatica.Checked)
@@ -287,8 +285,7 @@ namespace Sensor_de_Temperatura_e_Umidade
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            atualizarTemperatura();
-            atualizarUmidade();
+            atualizarMedidas();
             AdicionarMedicaoAoHistorico();
         }
 
@@ -302,34 +299,40 @@ namespace Sensor_de_Temperatura_e_Umidade
 
         // ---------------------------- Funções de Temperatura e Umidade ----------------------------
 
-        // Método que inicializa o valor de temperatura com um valor aleatório
-        public void inicializaTemperatura()
+        // Método que inicializa as medidas com um valor aleatório
+
+        public void inicializaMedidas()
         {
             temperaturaNova = Math.Round(rnd.NextDouble() * 50, 1); // Gera uma temperatura entre 0 e 50 graus com uma casa decimal
             tbTemperatura.Text = (temperaturaNova.ToString() + "°C"); // Exibe a temperatura no TextBox
-            ultimaTemperatura = temperaturaNova; // Define o valor inicial da última temperatura         
-        }
+            ultimaTemperatura = temperaturaNova; // Define o valor inicial da última temperatura
 
-        public void inicializaUmidade()
-        {
             umidadeNova = (rnd.Next(20, 91)); // Gera uma umidade entre 20% e 90%
             tbUmidade.Text = (umidadeNova.ToString() + "%"); // Exibe a umidade no TextBox
             ultimaUmidade = umidadeNova; // Define o valor inicial da última umidade
+            
         }
 
-        // Método que atualiza o valor da temperatura com variação aleatória
-        public void atualizarTemperatura()
+        
+        // Método que atualiza os valores das medidas com variação aleatória
+        public void atualizarMedidas()
         {
-            if (temperaturaNova == -1) // Se a temperatura ainda não foi inicializada
+            if ((temperaturaNova == -1) & (umidadeNova == -1)) // Se a temperatura ainda não foi inicializada
             {
-                inicializaTemperatura(); // Inicializa a temperatura
-                tbVariacaoTemperatura.Text = ("+" + Math.Round((temperaturaNova - ultimaTemperatura), 1).ToString() + "°C"); // Exibe a variação              
+                inicializaMedidas(); // Inicializa a temperatura
+                tbVariacaoTemperatura.Text = ("+" + Math.Round((temperaturaNova - ultimaTemperatura), 1).ToString() + "°C"); // Exibe a variação
+                tbVariacaoUmidade.Text = ("+" + (umidadeNova - ultimaUmidade).ToString() + "%"); // Exibe a variação
+                AdicionarMedicaoAoHistorico();
             }
             else
             {
                 // Calcula uma variação aleatória entre -5 e +5 graus
-                double variacao = Math.Round(rnd.NextDouble() * 10, 1) - 5;
-                temperaturaNova += variacao; // Atualiza a temperatura com a variação
+                double variacaoTemp = Math.Round(rnd.NextDouble() * 10, 1) - 5;
+                temperaturaNova += variacaoTemp; // Atualiza a temperatura com a variação
+
+                // Calcula uma variação aleatória entre -5% e +5%
+                int variacaoUmid = ((rnd.Next(0, 10) - 5));
+                umidadeNova += variacaoUmid; // Atualiza a umidade com a variação
 
                 // Mantém a temperatura no intervalo entre 0 e 50 graus
                 if (temperaturaNova < 0)
@@ -341,35 +344,6 @@ namespace Sensor_de_Temperatura_e_Umidade
                     temperaturaNova = 50;
                 }
 
-                tbTemperatura.Text = (temperaturaNova.ToString() + "°C"); // Exibe a nova temperatura no TextBox
-
-                // Calcula a variação
-                double variacaoTemp = Math.Round((temperaturaNova - ultimaTemperatura), 1);
-
-                // Define o texto e a cor com base no valor da variação
-                tbVariacaoTemperatura.Text = (variacaoTemp >= 0 ? "+" : "") + variacaoTemp.ToString() + "°C";
-                tbVariacaoTemperatura.ForeColor = variacaoTemp >= 0 ? Color.Green : Color.Red;
-
-                ultimaTemperatura = temperaturaNova;
-
-
-            }
-        }
-
-        // Método que atualiza o valor da umidade com variação aleatória
-        public void atualizarUmidade()
-        {
-            if (umidadeNova == -1) // Se a umidade ainda não foi inicializada
-            {
-                inicializaUmidade(); // Inicializa a umidade
-                tbVariacaoUmidade.Text = ("+" + (umidadeNova - ultimaUmidade).ToString() + "%"); // Exibe a variação
-            }
-            else
-            {
-                // Calcula uma variação aleatória entre -5% e +5%
-                int variacao = ((rnd.Next(0, 10) - 5));
-                umidadeNova += variacao; // Atualiza a umidade com a variação
-
                 // Mantém a umidade no intervalo entre 20% e 90%
                 if (umidadeNova < 20)
                 {
@@ -378,23 +352,17 @@ namespace Sensor_de_Temperatura_e_Umidade
                 else if (umidadeNova > 90)
                 {
                     umidadeNova = 90;
-                }
+                }               
 
-                tbUmidade.Text = (umidadeNova.ToString() + "%"); // Exibe a nova umidade no TextBox
+                AtualizarUI(temperaturaNova, umidadeNova);
 
-                // Calcula a variação
-                int variacaoUmid = (int)(umidadeNova - ultimaUmidade);
-
-                // Define o texto e a cor com base no valor da variação
-                tbVariacaoUmidade.Text = (variacaoUmid >= 0 ? "+" : "") + variacaoUmid.ToString() + "%";
-                tbVariacaoUmidade.ForeColor = variacaoUmid >= 0 ? Color.Green : Color.Red;
-
+                ultimaTemperatura = temperaturaNova;
                 ultimaUmidade = umidadeNova;
 
             }
         }
 
-
+ 
         // ---------------------------- Histórico ----------------------------
         private void AdicionarMedicaoAoHistorico()
         {
@@ -530,16 +498,21 @@ namespace Sensor_de_Temperatura_e_Umidade
         {
             try
             {
-                // Lê os dados recebidos da porta serial e remove espaços extras
-                string dadosRecebidos = serialPort1.ReadLine().Trim();
-
-                // Garante que as atualizações da UI ocorram na thread principal
-                this.Invoke((MethodInvoker)delegate
+                try
                 {
-                    atualizarTemperatura(); // Atualiza a temperatura com base nos novos dados
-                    atualizarUmidade(); // Atualiza a umidade com base nos novos dados
-                    AdicionarMedicaoAoHistorico(); // Armazena a medição no histórico
-                });
+                    string dadosRecebidos = serialPort1.ReadLine();
+                    Console.WriteLine($"Dados recebidos: {dadosRecebidos}"); // Teste para ver se os dados chegam
+
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        processarDados(dadosRecebidos);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro na leitura da porta serial: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                
 
             }
             catch (Exception ex)
@@ -547,6 +520,61 @@ namespace Sensor_de_Temperatura_e_Umidade
                 MessageBox.Show($"Erro na leitura da porta serial: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void processarDados(string dadosRecebidos)
+        {
+            string[] values = dadosRecebidos.Split(';');
+
+            if (values.Length == 2)
+            {
+                if (double.TryParse(values[0], out double tempC) && double.TryParse(values[1], out double umid))
+                {
+                    temperaturaNova = tempC;
+                    umidadeNova = umid;
+
+                    // Garante que a UI seja atualizada na thread principal
+                    if (InvokeRequired)
+                    {
+                        this.Invoke((MethodInvoker)delegate { AtualizarUI(tempC, umid); });
+                    }
+                    else
+                    {
+                        AtualizarUI(tempC, umid);
+                    }
+
+                    // Atualiza os valores anteriores
+                    ultimaTemperatura = temperaturaNova;
+                    ultimaUmidade = umidadeNova;
+                }
+                else
+                {
+                    Console.WriteLine($"Erro ao converter valores: {dadosRecebidos}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Formato inválido: {dadosRecebidos}");
+            }
+        }
+
+        private void AtualizarUI(double tempC, double umid)
+        {
+            tbTemperatura.Text = $"{tempC:F1}°C";
+            tbUmidade.Text = $"{umid:F1}%";
+
+            double variacaoTemp = Math.Round(temperaturaNova - ultimaTemperatura, 1);
+            int variacaoUmid = (int)(umidadeNova - ultimaUmidade);
+
+            tbVariacaoTemperatura.Text = $"{(variacaoTemp >= 0 ? "+" : "")}{variacaoTemp}°C";
+            tbVariacaoTemperatura.ForeColor = variacaoTemp >= 0 ? Color.Green : Color.Red;
+
+            tbVariacaoUmidade.Text = $"{(variacaoUmid >= 0 ? "+" : "")}{variacaoUmid}%";
+            tbVariacaoUmidade.ForeColor = variacaoUmid >= 0 ? Color.Green : Color.Red;
+            
+
+            AdicionarMedicaoAoHistorico();
+        }
+
 
         // ---------------------------- Controle de Abas ----------------------------
 
