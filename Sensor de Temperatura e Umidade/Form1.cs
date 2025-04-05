@@ -286,7 +286,6 @@ namespace Sensor_de_Temperatura_e_Umidade
         private void timer1_Tick(object sender, EventArgs e)
         {
             atualizarMedidas();
-            AdicionarMedicaoAoHistorico();
         }
 
         private void atualizacaoAutomatica(object sender, EventArgs e)
@@ -335,24 +334,12 @@ namespace Sensor_de_Temperatura_e_Umidade
                 umidadeNova += variacaoUmid; // Atualiza a umidade com a variação
 
                 // Mantém a temperatura no intervalo entre 0 e 50 graus
-                if (temperaturaNova < 0)
-                {
-                    temperaturaNova = 0;
-                }
-                else if (temperaturaNova > 50)
-                {
-                    temperaturaNova = 50;
-                }
+                if (temperaturaNova < 0) {temperaturaNova = 0;}
+                else if (temperaturaNova > 50) {temperaturaNova = 50;}
 
                 // Mantém a umidade no intervalo entre 20% e 90%
-                if (umidadeNova < 20)
-                {
-                    umidadeNova = 20;
-                }
-                else if (umidadeNova > 90)
-                {
-                    umidadeNova = 90;
-                }               
+                if (umidadeNova < 20) {umidadeNova = 20;}
+                else if (umidadeNova > 90) {umidadeNova = 90;}               
 
                 AtualizarUI(temperaturaNova, umidadeNova);
 
