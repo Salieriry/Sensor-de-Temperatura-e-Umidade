@@ -41,6 +41,7 @@
             this.tbVariacaoTemperatura = new System.Windows.Forms.TextBox();
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.cbSerial = new System.Windows.Forms.ComboBox();
+            this.timer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // buttonAtualizacaoManual
@@ -169,11 +170,16 @@
             this.cbSerial.TabIndex = 19;
             this.cbSerial.Text = "Portas seriais...";
             // 
+            // timer
+            // 
+            this.timer.Interval = 5000;
+            this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(782, 553);
+            this.ClientSize = new System.Drawing.Size(782, 673);
             this.Controls.Add(this.cbSerial);
             this.Controls.Add(this.checkBoxAtualizacaoAutomatica);
             this.Controls.Add(this.label5);
@@ -185,6 +191,9 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tbVariacaoTemperatura);
             this.Controls.Add(this.buttonAtualizacaoManual);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(800, 720);
+            this.MinimumSize = new System.Drawing.Size(800, 720);
             this.Name = "Form1";
             this.Text = "Simulador de Sensor de Temperatura e Umidade";
             this.ResumeLayout(false);
@@ -206,6 +215,7 @@
         private System.Windows.Forms.TextBox tbVariacaoTemperatura;
         private System.IO.Ports.SerialPort serialPort1;
         private System.Windows.Forms.ComboBox cbSerial;
+        private System.Windows.Forms.Timer timer;
     }
 }
 

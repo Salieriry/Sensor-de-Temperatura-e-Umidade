@@ -19,9 +19,6 @@ namespace Sensor_de_Temperatura_e_Umidade
         // ---------------------------- Variáveis Globais ----------------------------
 
 
-        // Timer para atualização automática
-        private Timer timer;
-
         // Listas para histórico de medições
         private List<Medicao> historicoMedicoes;
 
@@ -54,19 +51,8 @@ namespace Sensor_de_Temperatura_e_Umidade
             InitializeComponent(); // Inicializa o layout básico
             ConfigurarInterface(); // Configura a interface personalizada
 
-    
-
             // Inicializa variáveis
             historicoMedicoes = new List<Medicao>();
-
-            // Configuração do Timer
-            timer = new Timer
-            {
-                Interval = 5000 // Intervalo de 5 segundos
-            };
-            timer.Tick += timer1_Tick; // Evento disparado a cada tick
-
-
 
         }
 
@@ -283,7 +269,7 @@ namespace Sensor_de_Temperatura_e_Umidade
                 timer.Start();
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
+        private void timer_Tick(object sender, EventArgs e)
         {
             atualizarMedidas();
         }
