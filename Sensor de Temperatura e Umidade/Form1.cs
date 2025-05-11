@@ -18,7 +18,6 @@ namespace Sensor_de_Temperatura_e_Umidade
     {
         // ---------------------------- Variáveis Globais ----------------------------
 
-
         // Listas para histórico de medições
         private List<Medicao> historicoMedicoes;
 
@@ -93,13 +92,13 @@ namespace Sensor_de_Temperatura_e_Umidade
             ConfigurarLabelETextBox(painelMedicoes, label1, tbTemperatura, "Temperatura:", fontLabels, fontValues, 20);
 
             // Configuração da variação de temperatura
-            ConfigurarLabelETextBox(painelMedicoes, label4, tbVariacaoTemperatura, "Variação Temp.:", fontLabels, fontValues, 140);
+            ConfigurarLabelETextBox(painelMedicoes, label4, tbVariacaoTemperatura, "Variação Temp. :", fontLabels, fontValues, 140);
 
             // Configuração de umidade
             ConfigurarLabelETextBox(painelMedicoes, label2, tbUmidade, "Umidade:", fontLabels, fontValues, 260);
 
             // Configuração da variação de umidade
-            ConfigurarLabelETextBox(painelMedicoes, label5, tbVariacaoUmidade, "Variação Umid.:", fontLabels, fontValues, 380);
+            ConfigurarLabelETextBox(painelMedicoes, label5, tbVariacaoUmidade, "Variação Umid. :", fontLabels, fontValues, 380);
 
             // Adiciona o painel ao formulário
             this.Controls.Add(painelMedicoes);
