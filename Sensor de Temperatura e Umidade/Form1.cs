@@ -558,53 +558,58 @@ namespace Sensor_de_Temperatura_e_Umidade
             // Verifica qual aba foi selecionada e ativa o modo correspondente
             if (tab.SelectedTab.Text == "Simulação")
             {
-                DesativarModoReal(); // Desativa o modo de sensores reais
-                AtivarModoSimulacao(); // Ativa a simulação
+                modoReal(false); // Desativa o modo de sensores reais
+                modoSimulacao(true); // Ativa a simulação
             }
             else if (tab.SelectedTab.Text == "Sensor Real")
             {
-                DesativarModoSimulacao(); // Desativa a simulação
-                AtivarModoReal(); // Ativa o modo de sensores reais
+                modoSimulacao(false); // Desativa a simulação
+                modoReal(true); // Ativa o modo de sensores reais
             }
         }
 
         // ---------------------------- Modos de Operação ----------------------------
 
-        private void AtivarModoSimulacao()
+        private void modoSimulacao(bool ativo)
         {
-            // Habilita os controles relacionados à simulação
-            buttonAtualizacaoManual.Enabled = true;
-            checkBoxAtualizacaoAutomatica.Enabled = true;
-        }
-
-        private void DesativarModoSimulacao()
-        {
-            // Desabilita os controles da simulação e para a atualização automática, se estiver ativa
-            if (checkBoxAtualizacaoAutomatica.Checked)
+            if (ativo)
             {
-                checkBoxAtualizacaoAutomatica.Checked = false;
-                // Aqui deve ser incluída a lógica para parar o timer ou outro mecanismo de atualização automática
+                // Habilita os controles relacionados à simulação
+                buttonAtualizacaoManual.Enabled = true;
+                checkBoxAtualizacaoAutomatica.Enabled = true;
             }
-            buttonAtualizacaoManual.Enabled = false;
-            checkBoxAtualizacaoAutomatica.Enabled = false;
-        }
-
-        private void AtivarModoReal()
-        {
-            // Recarrega as portas seriais disponíveis e habilita os controles do modo real
-            CarregarPortasSeriais();
-        }
-
-        private void DesativarModoReal()
-        {
-            // Desconecta da porta serial caso esteja conectada
-            Button btnDesconectar = tabControl.TabPages[1].Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Desconectar");
-
-            if (btnDesconectar != null && !btnDesconectar.Enabled)
+            else
             {
-                // Simula um clique no botão de desconectar para garantir que a conexão seja encerrada corretamente
-                DesconectarDispositivo(btnDesconectar, EventArgs.Empty);
+                // Desabilita os controles da simulação e para a atualização automática, se estiver ativa
+                if (checkBoxAtualizacaoAutomatica.Checked)
+                {
+                    checkBoxAtualizacaoAutomatica.Checked = false;
+                    // Aqui deve ser incluída a lógica para parar o timer ou outro mecanismo de atualização automática
+                }
+                buttonAtualizacaoManual.Enabled = false;
+                checkBoxAtualizacaoAutomatica.Enabled = false;
             }
+        }
+
+        private void modoReal(bool ativo)
+        {
+            if (ativo)
+            {
+                // Recarrega as portas seriais disponíveis e habilita os controles do modo real
+                CarregarPortasSeriais();
+            } else
+            {
+                // Desconecta da porta serial caso esteja conectada
+                Button btnDesconectar = tabControl.TabPages[1].Controls.OfType<Button>().FirstOrDefault(b => b.Text == "Desconectar");
+
+                if (btnDesconectar != null && !btnDesconectar.Enabled)
+                {
+                    // Simula um clique no botão de desconectar para garantir que a conexão seja encerrada corretamente
+                    DesconectarDispositivo(btnDesconectar, EventArgs.Empty);
+                }
+
+            }
+            
         }
 
     }
